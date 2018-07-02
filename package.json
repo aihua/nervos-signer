@@ -1,13 +1,14 @@
 {
   "name": "@nervos/signer",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "src/index.js",
   "repository": "https://github.com/Keith-CY/nervos-signer",
   "author": "Keith <keithwhisper@gmail.com>",
   "license": "MIT",
   "scripts": {
     "start": "nodemon src/index.js",
-    "protoc": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./proto-js --proto_path=cita-proto --js_out=import_style=commonjs,binary:./proto-js cita-proto/blockchain.proto"
+    "protoc": "protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=./proto-js --proto_path=cita-proto --js_out=import_style=commonjs,binary:./proto-js cita-proto/blockchain.proto",
+    "build": "tsc"
   },
   "dependencies": {
     "@nervos/web3-plugin": "^0.17.5",
@@ -16,8 +17,12 @@
     "web3": "^1.0.0-beta.34"
   },
   "devDependencies": {
+    "@types/node": "^10.5.1",
+    "@types/web3": "^1.0.0",
     "nodemon": "^1.17.5",
     "protoc": "^1.0.3",
-    "ts-protoc-gen": "^0.7.3"
+    "ts-node": "^7.0.0",
+    "ts-protoc-gen": "^0.7.3",
+    "typescript": "^2.9.2"
   }
 }
