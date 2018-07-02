@@ -1,6 +1,6 @@
 {
   "name": "@nervos/signer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "src/index.js",
   "repository": "https://github.com/Keith-CY/nervos-signer",
   "author": "Keith <keithwhisper@gmail.com>",
