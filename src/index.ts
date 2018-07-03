@@ -1,5 +1,5 @@
-const Web3 = require('web3')
 // const config = require('./config.secret')
+const Web3 = require('web3')
 const blockchainPb = require('../proto-js/blockchain_pb')
 
 const EC = require('elliptic').ec
@@ -8,13 +8,11 @@ const ec = new EC('secp256k1')
 // const web3 = new Web3(config.server)
 const web3 = new Web3('')
 
-
 const getNonce = () => {
   return web3.utils.randomHex(5)
 }
 
-
-const hex2bytes = (hex) => {
+const hex2bytes = (hex: string | number) => {
   if (typeof hex === 'string') {
     return web3.utils.hexToBytes(hex.startsWith('0x') ? hex : '0x' + hex)
   }
@@ -27,18 +25,24 @@ const hex2bytes = (hex) => {
 const sign = ({
   privateKey,
   data = '',
-  nonce,
+  nonce = getNonce(),
   quota,
   validUntilBlock,
   value,
   version = 0,
   chainId = 1,
-  receiver = '',
+  to = '',
+}: {
+  privateKey: string
+  data?: string
+  nonce: string
+  quota: number
+  validUntilBlock: string | number
+  value?: string
+  version?: number
+  chainId: number
+  to?: string
 }) => {
-  // return config.tx
-  const account = web3.eth.accounts.privateKeyToAccount(privateKey)
-  const from = account.address
-  const to = receiver
   const tx = new blockchainPb.Transaction()
 
   if (nonce === undefined) {
@@ -49,12 +53,17 @@ const sign = ({
 
   if (quota > 0) {
     tx.setQuota(quota)
-
   } else {
     throw new Error('Quota should be set larger than 0')
   }
 
-  tx.setValue(value)
+  // tx.setValue(value)
+  try {
+    const _value = hex2bytes(value || '')
+    tx.setData(new Uint8Array(_value))
+  } catch (err) {
+    throw new Error(err)
+  }
 
   if (to) {
     tx.setTo(to)
@@ -63,7 +72,6 @@ const sign = ({
   if (validUntilBlock === undefined) {
     throw new Error('ValidUntilBlock should be set')
   } else {
-
     tx.setValidUntilBlock(validUntilBlock)
   }
 
@@ -82,11 +90,7 @@ const sign = ({
 
   tx.setVersion(version)
 
-
-
   const txMsg = tx.serializeBinary()
-
-  hex = web3.utils.bytesToHex(txMsg).slice(2)
 
   const hashedMsg = web3.utils.sha3(txMsg).slice(2)
 
@@ -106,23 +110,20 @@ const sign = ({
   //
   // end
 
-
   // old style
-  var key = ec.keyFromPrivate(privateKey, "hex");
-  var sign = key.sign(new Buffer(hashedMsg.toString(), 'hex'));
+  var key = ec.keyFromPrivate(privateKey, 'hex')
+  var sign = key.sign(new Buffer(hashedMsg.toString(), 'hex'))
 
-  var sign_r = sign.r.toString(16);
-  var sign_s = sign.s.toString(16);
-  if (sign_r.length == 63) sign_r = "0" + sign_r;
-  if (sign_s.length == 63) sign_s = "0" + sign_s;
-  var signature = sign_r + sign_s;
-  var sign_buffer = new Buffer(signature, "hex");
-  var sigBytes = new Uint8Array(65);
-  sigBytes.set(sign_buffer);
-  sigBytes[64] = sign.recoveryParam;
+  var sign_r = sign.r.toString(16)
+  var sign_s = sign.s.toString(16)
+  if (sign_r.length == 63) sign_r = '0' + sign_r
+  if (sign_s.length == 63) sign_s = '0' + sign_s
+  var signature = sign_r + sign_s
+  var sign_buffer = new Buffer(signature, 'hex')
+  var sigBytes = new Uint8Array(65)
+  sigBytes.set(sign_buffer)
+  sigBytes[64] = sign.recoveryParam
   // end
-
-
 
   const unverifiedTx = new blockchainPb.UnverifiedTransaction()
   unverifiedTx.setTransaction(tx)
@@ -131,10 +132,7 @@ const sign = ({
 
   const serializedUnverifiedTx = unverifiedTx.serializeBinary()
 
-
   const hexUnverifiedTx = web3.utils.bytesToHex(serializedUnverifiedTx)
   return hexUnverifiedTx
-
 }
-
-module.exports = sign
+export default sign
