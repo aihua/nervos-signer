@@ -5,7 +5,6 @@ const blockchainPb = require('../proto-js/blockchain_pb')
 const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 
-// const web3 = new Web3(config.server)
 const web3 = new Web3('')
 
 const getNonce = () => {
@@ -43,6 +42,19 @@ const sign = ({
   chainId: number
   to?: string
 }) => {
+  if (!privateKey) {
+    console.warn('No private key found')
+    return {
+      data,
+      nonce,
+      quota,
+      validUntilBlock,
+      value,
+      version,
+      chainId,
+      to,
+    }
+  }
   const tx = new blockchainPb.Transaction()
 
   if (nonce === undefined) {
