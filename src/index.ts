@@ -1,17 +1,17 @@
-// const config = require('./config.secret')
 const Web3 = require('web3')
 const blockchainPb = require('../proto-js/blockchain_pb')
 
 const EC = require('elliptic').ec
-const ec = new EC('secp256k1')
+export const ec = new EC('secp256k1')
 
-const web3 = new Web3('')
+export const web3 = new Web3('')
+export const sha3 = web3.utils.sha3
 
-const getNonce = () => {
+export const getNonce = () => {
   return web3.utils.randomHex(5)
 }
 
-const hex2bytes = (hex: string | number) => {
+export const hex2bytes = (hex: string | number) => {
   if (typeof hex === 'string') {
     return web3.utils.hexToBytes(hex.startsWith('0x') ? hex : '0x' + hex)
   }
@@ -21,13 +21,17 @@ const hex2bytes = (hex: string | number) => {
   throw new Error('Invalid Hex or Number')
 }
 
-const sign = ({
+export const bytes2hex = (bytes: Uint8Array) => {
+  return web3.utils.bytesToHex(bytes)
+}
+
+const signer = ({
   privateKey,
   data = '',
   nonce = getNonce(),
   quota,
   validUntilBlock,
-  value,
+  value = '',
   version = 0,
   chainId = 1,
   to = '',
@@ -37,7 +41,7 @@ const sign = ({
   nonce: string
   quota: number
   validUntilBlock: string | number
-  value?: string
+  value: string
   version?: number
   chainId: number
   to?: string
@@ -69,13 +73,16 @@ const sign = ({
     throw new Error('Quota should be set larger than 0')
   }
 
-  // tx.setValue(value)
-  try {
-    const _value = hex2bytes(value || '')
-    tx.setData(new Uint8Array(_value))
-  } catch (err) {
-    throw new Error(err)
-  }
+  // // tx.setValue(value)
+  // if (value) {
+  //   try {
+  //     const _value = hex2bytes(value)
+  //     tx.setValue(new Uint8Array(_value))
+  //   } catch (err) {
+  //     throw new Error(err)
+  //   }
+  // }
+  tx.setValue(new Uint8Array(+value))
 
   if (to) {
     tx.setTo(to)
@@ -104,7 +111,7 @@ const sign = ({
 
   const txMsg = tx.serializeBinary()
 
-  const hashedMsg = web3.utils.sha3(txMsg).slice(2)
+  const hashedMsg = sha3(txMsg).slice(2)
 
   /**
    * Web3 style
@@ -123,7 +130,10 @@ const sign = ({
   // end
 
   // old style
-  var key = ec.keyFromPrivate(privateKey, 'hex')
+  var key = ec.keyFromPrivate(
+    privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey,
+    'hex',
+  )
   var sign = key.sign(new Buffer(hashedMsg.toString(), 'hex'))
 
   var sign_r = sign.r.toString(16)
@@ -147,4 +157,4 @@ const sign = ({
   const hexUnverifiedTx = web3.utils.bytesToHex(serializedUnverifiedTx)
   return hexUnverifiedTx
 }
-export default sign
+export default signer

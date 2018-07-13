@@ -29,5 +29,10 @@
   "include": [
     "./src/*",
     "./node_modules/types-bn/index.d.ts"
+  ],
+  "exclude": [
+    "src/config.secret.ts",
+    "src/debug.ts",
+    "src/sign.ts"
   ]
 }
