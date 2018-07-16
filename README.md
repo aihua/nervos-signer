@@ -1,4 +1,4 @@
-![Travis](https://img.shields.io/travis/cryptape/nervos-signer.svg)
+[![Build Status](https://travis-ci.org/cryptape/nervos-signer.svg?branch=master)](https://travis-ci.org/cryptape/nervos-signer)
 ![npm (scoped)](https://img.shields.io/npm/v/@nervos/signer.svg)
 
 # nervos-signer
