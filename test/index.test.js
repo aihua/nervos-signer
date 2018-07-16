@@ -1,43 +1,54 @@
 const {
-  default: sign
-} = require('../lib')
+  nervos,
+  tx,
+} = require('./config')
 
+const sign = require('../lib').default
 
-const privateKey = '0x7cc34429d268cdf33e1595d9aa3c56bfcb785c24b7f6dd031fe059d93d8e92d9'
-
-// const transaction = {
-//   // from: '0xb4061fA8E18654a7d51FEF3866d45bB1DC688717',
-//   nonce: 9999999,
-//   quota: 100,
-//   data: '6060604052341561000f57600080fd5b60d38061001d6000396000f3006060604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604e5780636d4ce63c14606e575b600080fd5b3415605857600080fd5b606c60048080359060200190919050506094565b005b3415607857600080fd5b607e609e565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a723058202d9a0979adf6bf48461f24200e635bc19cd1786efbcfc0608eb1d76114d405860029',
-//   chainId: 1,
-//   version: 0,
-//   validUntilBlock: 999999999
-// }
-
-const bytecode = '6060604052341561000f57600080fd5b60d38061001d6000396000f3006060604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604e5780636d4ce63c14606e575b600080fd5b3415605857600080fd5b606c60048080359060200190919050506094565b005b3415607857600080fd5b607e609e565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a723058202d9a0979adf6bf48461f24200e635bc19cd1786efbcfc0608eb1d76114d405860029'
-const transaction = {
-  from: '0xb4061fA8E18654a7d51FEF3866d45bB1DC688717',
-  privateKey: '0x87b6fba44045c31d33bee382855a154b0346449530df935d9072cf84fd2a1d0d',
-  nonce: '999999',
-  quota: 1000000,
-  data: bytecode,
-  chainId: 1,
-  version: 0,
-  validUntilBlock: 999999,
-  value: '0x0'
-}
-
-// const output = '0x0afd01186420ff93ebdc032af0016060604052341561000f57600080fd5b60d38061001d6000396000f3006060604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806360fe47b114604e5780636d4ce63c14606e575b600080fd5b3415605857600080fd5b606c60048080359060200190919050506094565b005b3415607857600080fd5b607e609e565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a723058202d9a0979adf6bf48461f24200e635bc19cd1786efbcfc0608eb1d76114d405860029380112413f6f408dc4090b189f8e30e2c54861ab4a4164743755e42686e2916d0ce50b56ef36463fc866c5c549192729e4152ae89c8abd10ebb9e50d37054d2d4875f43700'
-
-test('sign transaction', () => {
-  const signed = sign({ ...transaction,
-    privateKey
-  })
+const inquireReceipt = txHash => new Promise((resolve, reject) => {
+  let remains = 10
+  let interval = setInterval(() => {
+    if (!remains) {
+      clearInterval(interval)
+      reject(new Error('No Receipt Received'))
+    }
+    remains--
+    nervos.appchain.getTransactionReceipt(txHash).then(receipt => {
+      if (receipt && receipt.transactionHash) {
+        clearInterval(interval)
+        resolve(receipt)
+      }
+    })
+  }, 1000)
 })
 
+test('sendTransaction, getTransactionReceipt, and getTransaction', async () => {
+  expect.assertions(5)
+  jest.setTimeout(30000)
+  const currentHeight = await nervos.appchain.getBlockNumber()
+  const signedMsg = sign({ ...tx,
+    validUntilBlock: +currentHeight + 88
+  })
+  const result = await nervos.appchain.sendSignedTransaction(signedMsg)
+  console.log('sendTransaction Returns: ')
+  console.log(result)
+  expect(result.status).toBe('OK')
+  expect(result.hash.startsWith('0x')).toBe(true)
 
-// test('return transaction if no private key', () => {
-//   const unsigned = sign(transaction)
-//   expect(unsigned.data).toBe(transaction.data)
-// })
+  if (!result.hash) {
+    return new Error('No TxHash Received')
+  }
+
+  const receipt = await inquireReceipt(result.hash)
+  console.log('receipt: ')
+  console.log(receipt)
+
+  expect(receipt.transactionHash).toBe(result.hash)
+  expect(receipt.errorMessages).not.toBeNull()
+  //TODO: getTransactionProof
+  const transactionResult = await nervos.appchain.getTransaction(result.hash)
+  expect(transactionResult.hash).toBe(result.hash)
+  console.log('transaction result')
+  console.log(transactionResult)
+  return
+})

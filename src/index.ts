@@ -62,7 +62,8 @@ const signer = ({
   const tx = new blockchainPb.Transaction()
 
   if (nonce === undefined) {
-    throw new Error('Nonce should be set')
+    // throw new Error('Nonce should be set')
+    tx.setNonce(getNonce())
   } else {
     tx.setNonce(nonce)
   }

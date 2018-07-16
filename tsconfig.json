@@ -33,6 +33,5 @@
   "exclude": [
     "src/config.secret.ts",
     "src/debug.ts",
-    "src/sign.ts"
   ]
 }
