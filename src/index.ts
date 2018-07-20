@@ -1,5 +1,6 @@
 const Web3 = require('web3')
 const blockchainPb = require('../proto-js/blockchain_pb')
+export const unsigner = require('./unsigner').default
 
 const EC = require('elliptic').ec
 export const ec = new EC('secp256k1')
@@ -75,15 +76,15 @@ const signer = ({
   }
 
   // // tx.setValue(value)
-  // if (value) {
-  //   try {
-  //     const _value = hex2bytes(value)
-  //     tx.setValue(new Uint8Array(_value))
-  //   } catch (err) {
-  //     throw new Error(err)
-  //   }
-  // }
-  tx.setValue(new Uint8Array(+value))
+  if (value) {
+    try {
+      const _value = hex2bytes(value)
+      tx.setValue(new Uint8Array(_value))
+    } catch (err) {
+      throw new Error(err)
+    }
+  }
+  // tx.setValue(new Uint8Array(+value))
 
   if (to) {
     tx.setTo(to)
@@ -114,29 +115,12 @@ const signer = ({
 
   const hashedMsg = sha3(txMsg).slice(2)
 
-  /**
-   * Web3 style
-   */
-  // const {
-  //   message,
-  //   messageHash,
-  //   v,
-  //   r,
-  //   s,
-  //   signature
-  // } = web3.eth.accounts.sign(hashedMsg, privateKey);
-  //
-  // const _signature = r.slice(2) + s.slice(2) + `0${(v-27)}`
-  //
-  // end
-
   // old style
   var key = ec.keyFromPrivate(
     privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey,
     'hex',
   )
   var sign = key.sign(new Buffer(hashedMsg.toString(), 'hex'))
-
   var sign_r = sign.r.toString(16)
   var sign_s = sign.s.toString(16)
   if (sign_r.length == 63) sign_r = '0' + sign_r

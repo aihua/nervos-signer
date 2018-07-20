@@ -1,9 +1,12 @@
 const {
   nervos,
   tx,
+  from
 } = require('./config')
 
 const sign = require('../lib').default
+const unsign = require('../lib').unsigner
+
 
 const inquireReceipt = txHash => new Promise((resolve, reject) => {
   let remains = 10
@@ -51,4 +54,22 @@ test('sendTransaction, getTransactionReceipt, and getTransaction', async () => {
   console.log('transaction result')
   console.log(transactionResult)
   return
+})
+
+test('unsign', () => {
+
+  const signedMsg = sign(tx)
+  const {
+    transaction,
+    // signature,
+    crypto,
+    // publicKey,
+    address
+  } = unsign(signedMsg)
+  expect(transaction.to).toBe('')
+  expect(transaction.validUntilBlock).toBe(tx.validUntilBlock)
+  expect(transaction.version).toBe(tx.version)
+  expect(transaction.chainId).toBe(tx.chainId)
+  expect(crypto).toBe(0)
+  expect(address).toBe(from.slice(2).toLowerCase())
 })
