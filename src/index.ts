@@ -1,20 +1,21 @@
-const Web3 = require('web3')
+require('web3-eth')
+const utils = require('web3-utils')
 const blockchainPb = require('../proto-js/blockchain_pb')
 export const unsigner = require('./unsigner').default
 
 const EC = require('elliptic').ec
 export const ec = new EC('secp256k1')
 
-export const web3 = new Web3('')
-export const sha3 = web3.utils.sha3
+// export const web3 = new Web3('')
+export const sha3 = utils.sha3
 
 export const getNonce = () => {
-  return web3.utils.randomHex(5)
+  return utils.randomHex(5)
 }
 
 export const hex2bytes = (hex: string | number) => {
   if (typeof hex === 'string') {
-    return web3.utils.hexToBytes(hex.startsWith('0x') ? hex : '0x' + hex)
+    return utils.hexToBytes(hex.startsWith('0x') ? hex : '0x' + hex)
   }
   if (typeof hex === 'number') {
     return '0x' + hex.toString(16)
@@ -23,7 +24,7 @@ export const hex2bytes = (hex: string | number) => {
 }
 
 export const bytes2hex = (bytes: Uint8Array) => {
-  return web3.utils.bytesToHex(bytes)
+  return utils.bytesToHex(bytes)
 }
 
 const signer = ({
@@ -139,7 +140,7 @@ const signer = ({
 
   const serializedUnverifiedTx = unverifiedTx.serializeBinary()
 
-  const hexUnverifiedTx = web3.utils.bytesToHex(serializedUnverifiedTx)
+  const hexUnverifiedTx = utils.bytesToHex(serializedUnverifiedTx)
   return hexUnverifiedTx
 }
 export default signer

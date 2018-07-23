@@ -1,6 +1,6 @@
 {
   "name": "@nervos/signer",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "main": "lib/index.js",
   "repository": "https://github.com/Keith-CY/nervos-signer",
   "author": "Keith <keithwhisper@gmail.com>",
@@ -12,10 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@nervos/web3-plugin": "^0.17.5",
-    "crypto-js": "^3.1.9-1",
     "ec": "^0.0.1",
-    "eccrypto": "^1.0.3",
     "elliptic": "^6.4.0",
     "web3": "^1.0.0-beta.34"
   },
