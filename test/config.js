@@ -12,9 +12,7 @@ const from = account.address;
 
 const tx = {
   from,
-  privateKey,
   data: bytecode,
-  // nonce: 999999,
   quota: 1000000,
   chainId: 1,
   version: 0,
