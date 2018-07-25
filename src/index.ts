@@ -17,7 +17,7 @@ export const hex2bytes = (hex: string | number) => {
     return web3.utils.hexToBytes(hex.startsWith('0x') ? hex : '0x' + hex)
   }
   if (typeof hex === 'number') {
-    return '0x' + hex.toString(16)
+    return web3.utils.hexToBytes('0x' + hex.toString(16))
   }
   throw new Error('Invalid Hex or Number')
 }
@@ -26,28 +26,31 @@ export const bytes2hex = (bytes: Uint8Array) => {
   return web3.utils.bytesToHex(bytes)
 }
 
-const signer = ({
-  privateKey,
-  data = '',
-  nonce = getNonce(),
-  quota,
-  validUntilBlock,
-  value = '',
-  version = 0,
-  chainId = 1,
-  to = '',
-}: {
-  privateKey: string
-  data?: string
-  nonce: string
-  quota: number
-  validUntilBlock: string | number
-  value: string
-  version?: number
-  chainId: number
-  to?: string
-}) => {
-  if (!privateKey) {
+const signer = (
+  {
+    privateKey,
+    data = '',
+    nonce = getNonce(),
+    quota,
+    validUntilBlock,
+    value = '',
+    version = 0,
+    chainId = 1,
+    to = '',
+  }: {
+    privateKey: string
+    data?: string
+    nonce: string
+    quota: number
+    validUntilBlock: string | number
+    value: string
+    version?: number
+    chainId: number
+    to?: string
+  },
+  externalKey?: string,
+) => {
+  if (!privateKey && !externalKey) {
     console.warn('No private key found')
     return {
       data,
@@ -63,7 +66,6 @@ const signer = ({
   const tx = new blockchainPb.Transaction()
 
   if (nonce === undefined) {
-    // throw new Error('Nonce should be set')
     tx.setNonce(getNonce())
   } else {
     tx.setNonce(nonce)
@@ -75,16 +77,16 @@ const signer = ({
     throw new Error('Quota should be set larger than 0')
   }
 
-  // // tx.setValue(value)
   if (value) {
     try {
       const _value = hex2bytes(value)
-      tx.setValue(new Uint8Array(_value))
+      const valueBytes = new Uint8Array(32)
+      valueBytes.set(_value, 32 - _value.length)
+      tx.setValue(valueBytes)
     } catch (err) {
       throw new Error(err)
     }
   }
-  // tx.setValue(new Uint8Array(+value))
 
   if (to) {
     tx.setTo(to)
@@ -117,7 +119,8 @@ const signer = ({
 
   // old style
   var key = ec.keyFromPrivate(
-    privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey,
+    // privateKey.startsWith('0x') ? privateKey.slice(2) : privateKey,
+    (externalKey || privateKey).replace(/^0x/, ''),
     'hex',
   )
   var sign = key.sign(new Buffer(hashedMsg.toString(), 'hex'))

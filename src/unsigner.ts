@@ -4,9 +4,7 @@ const blockchainPb = require('../proto-js/blockchain_pb')
 
 const unsigner = (hexUnverifiedTransaction: string) => {
   const bytesUnverifiedTransaction = hex2bytes(hexUnverifiedTransaction)
-  const unverifiedTransaction = blockchainPb.UnverifiedTransaction.deserializeBinary(
-    bytesUnverifiedTransaction,
-  )
+  const unverifiedTransaction = blockchainPb.UnverifiedTransaction.deserializeBinary(bytesUnverifiedTransaction)
   const transactionPb = unverifiedTransaction.getTransaction()
   const signature = unverifiedTransaction.getSignature()
   const crypto = unverifiedTransaction.getCrypto()
@@ -35,7 +33,12 @@ const unsigner = (hexUnverifiedTransaction: string) => {
     .toLowerCase()
 
   const hexSig = bytes2hex(signature).slice(2)
-  const result = { transaction, signature: hexSig, crypto, publicKey, address }
+  const result = {
+    transaction,
+    signature: hexSig,
+    crypto,
+    sender: { publicKey, address },
+  }
 
   return result
 }
