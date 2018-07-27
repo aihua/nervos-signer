@@ -1,6 +1,5 @@
 export declare const unsigner: any;
 export declare const ec: any;
-export declare const web3: any;
 export declare const sha3: any;
 export declare const getNonce: () => any;
 export declare const hex2bytes: (hex: string | number) => any;

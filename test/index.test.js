@@ -53,6 +53,13 @@ test('sendTransaction with internal key, getTransactionReceipt, and getTransacti
   //TODO: getTransactionProof
   const transactionResult = await nervos.appchain.getTransaction(result.hash)
   expect(transactionResult.hash).toBe(result.hash)
+  // console.log('------------------')
+  // console.log('signedMsg')
+  // console.log(signedMsg)
+  // console.log('------------------')
+  // console.log('content')
+  // console.log(transactionResult.content)
+  console.log('------------------')
   console.log('transaction result')
   console.log(transactionResult)
   return
