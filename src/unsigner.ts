@@ -2,6 +2,8 @@ import { ec, hex2bytes, bytes2hex, sha3 } from './index'
 const Signature = require('elliptic/lib/elliptic/ec/signature')
 const blockchainPb = require('../proto-js/blockchain_pb')
 
+const base64ToBytes = (b64: string) => Buffer.from(b64, 'base64')
+
 const unsigner = (hexUnverifiedTransaction: string) => {
   const bytesUnverifiedTransaction = hex2bytes(hexUnverifiedTransaction)
   const unverifiedTransaction = blockchainPb.UnverifiedTransaction.deserializeBinary(bytesUnverifiedTransaction)
@@ -9,6 +11,9 @@ const unsigner = (hexUnverifiedTransaction: string) => {
   const signature = unverifiedTransaction.getSignature()
   const crypto = unverifiedTransaction.getCrypto()
   const transaction = blockchainPb.Transaction.toObject(true, transactionPb)
+  // convert base64 data, value to hex
+  transaction.value = base64ToBytes(transaction.value)
+  transaction.data = base64ToBytes(transaction.data)
 
   const sign = new Signature({
     r: bytes2hex(signature.slice(0, 32)).slice(2),
