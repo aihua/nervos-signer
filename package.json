@@ -26,5 +26,9 @@
     "ts-node": "^7.0.0",
     "ts-protoc-gen": "^0.7.3",
     "typescript": "^2.9.2"
+  },
+  "jest": {
+    "verbose": true,
+    "testURL": "http://localhost/"
   }
 }

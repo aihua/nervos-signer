@@ -18,7 +18,7 @@ export const hex2bytes = (hex: string | number) => {
     return utils.hexToBytes(hex.startsWith('0x') ? hex : '0x' + hex)
   }
   if (typeof hex === 'number') {
-    return web3.utils.hexToBytes('0x' + hex.toString(16))
+    return utils.hexToBytes('0x' + hex.toString(16))
   }
   throw new Error('Invalid Hex or Number')
 }
